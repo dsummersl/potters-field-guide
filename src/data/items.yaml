@@ -1,0 +1,120 @@
+- id: '1'
+  name: bulbasaur
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/1/
+  types: grass,poison
+- id: '2'
+  name: ivysaur
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/2/
+  types: grass,poison
+- id: '3'
+  name: venusaur
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/3/
+  types: grass,poison
+- id: '4'
+  name: charmander
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/4/
+  types: fire
+- id: '5'
+  name: charmeleon
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/5/
+  types: fire
+- id: '6'
+  name: charizard
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/6/
+  types: fire,flying
+- id: '7'
+  name: squirtle
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/7/
+  types: water
+- id: '8'
+  name: wartortle
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/8/
+  types: water
+- id: '9'
+  name: blastoise
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/9/
+  types: water
+- id: '10'
+  name: caterpie
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/10/
+  types: bug
+- id: '11'
+  name: metapod
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/11.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/11/
+  types: bug
+- id: '12'
+  name: butterfree
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/12.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/12/
+  types: bug,flying
+- id: '13'
+  name: weedle
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/13.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/13/
+  types: bug,poison
+- id: '14'
+  name: kakuna
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/14.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/14/
+  types: bug,poison
+- id: '15'
+  name: beedrill
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/15.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/15/
+  types: bug,poison
+- id: '16'
+  name: pidgey
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/16/
+  types: normal,flying
+- id: '17'
+  name: pidgeotto
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/17.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/17/
+  types: normal,flying
+- id: '18'
+  name: pidgeot
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/18.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/18/
+  types: normal,flying
+- id: '19'
+  name: rattata
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/19/
+  types: normal
+- id: '20'
+  name: raticate
+  sprites_front_default: >-
+    https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/20.png
+  species_url: https://pokeapi.co/api/v2/pokemon-species/20/
+  types: normal

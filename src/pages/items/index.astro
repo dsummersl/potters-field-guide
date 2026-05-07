@@ -1,0 +1,41 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ItemCard from '@/components/ItemCard.astro';
+import { getItems } from '@/lib/loader';
+
+const items = getItems();
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title="Browse All" description="Browse every listing in the directory.">
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Browse All</h1>
+        <p class="text-gray-500 mt-1">{items.length} listing{items.length !== 1 ? 's' : ''}</p>
+      </div>
+      <a href={`${base}search`} class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+        </svg>
+        Search
+      </a>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {items.map(item => <ItemCard item={item} />)}
+    </div>
+
+    {items.length === 0 && (
+      <div class="text-center py-20 text-gray-400">
+        <p class="text-lg font-medium">No listings found.</p>
+      </div>
+    )}
+
+  </div>
+
+</Layout>

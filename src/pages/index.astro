@@ -1,0 +1,52 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ItemCard from '@/components/ItemCard.astro';
+import { getItems } from '@/lib/loader';
+
+const items = getItems();
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title="Home" description="Browse our community directory.">
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-br from-brand-700 to-brand-900 text-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">
+        Find What You Need
+      </h1>
+      <p class="text-brand-100 text-lg max-w-2xl mx-auto mb-8">
+        A directory built from your own data — no database required.
+      </p>
+
+      <!-- Quick search -->
+      <form action={`${base}search`} method="get" class="max-w-xl mx-auto flex gap-2">
+        <input
+          type="search"
+          name="q"
+          placeholder="Search…"
+          class="flex-1 px-5 py-3 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-300"
+        />
+        <button
+          type="submit"
+          class="px-6 py-3 bg-white text-brand-700 font-semibold rounded-lg hover:bg-brand-50 transition-colors"
+        >
+          Search
+        </button>
+      </form>
+
+      <!-- Item count -->
+      <div class="mt-10 text-sm text-brand-200">
+        <span><strong class="text-white text-2xl font-bold">{items.length}</strong><br/>Total Listings</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- All items grid -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {items.map(item => <ItemCard item={item} />)}
+    </div>
+  </section>
+
+</Layout>

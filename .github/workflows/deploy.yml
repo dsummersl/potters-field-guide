@@ -1,0 +1,84 @@
+# ---------------------------------------------------------------------------
+# Astro Directory Template — GitHub Pages Deployment
+#
+# Triggers:
+#   • Push to `main` branch
+#   • Pull request against `main` (build-only, no deploy)
+#   • Manual run via "Run workflow" button in the Actions tab
+#
+# Required secrets / variables (Settings > Secrets and variables > Actions):
+#   SITE_URL              – var     – e.g. https://yourusername.github.io
+#   SITE_BASE             – var     – e.g. /your-repo-name  (omit for custom domain)
+#
+# First-time setup:
+#   1. Go to Settings > Pages and set Source to "GitHub Actions".
+#   2. Add the variables above.
+#   3. Push to main or click "Run workflow".
+# ---------------------------------------------------------------------------
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual deploy"
+        required: false
+        default: "Manual deploy"
+
+# Allow only one concurrent deployment; cancel in-flight runs on new pushes.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch data
+        run: npm run fetch
+
+      - name: Build site
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          SITE_BASE: ${{ vars.SITE_BASE }}
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    # Only deploy on pushes/manual runs — not on pull requests
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

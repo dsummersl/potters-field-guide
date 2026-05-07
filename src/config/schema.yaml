@@ -1,0 +1,21 @@
+fields:
+  id:
+    source: id
+    type: string
+    required: true
+  title:
+    source: name
+    type: string
+    required: true
+  image:
+    source: sprites_front_default
+    type: url
+    required: false
+  description:
+    source: species_url
+    type: string
+    required: false
+  tags:
+    source: types
+    type: string
+    required: false

@@ -1,0 +1,96 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getItems, getItem } from '@/lib/loader';
+
+export async function getStaticPaths() {
+  const items = getItems();
+  return items.map(item => ({ params: { id: item.id } }));
+}
+
+const { id } = Astro.params;
+const item = getItem(id!);
+
+if (!item) {
+  return Astro.redirect(import.meta.env.BASE_URL || '/');
+}
+
+const base = import.meta.env.BASE_URL;
+const extraEntries = Object.entries(item.extras).filter(([, v]) => v);
+---
+
+<Layout title={item.title} description={item.description}>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+      <a href={base} class="hover:text-brand-600 transition-colors">Home</a>
+      <span>&rsaquo;</span>
+      <a href={`${base}items`} class="hover:text-brand-600 transition-colors">Browse</a>
+      <span>&rsaquo;</span>
+      <span class="text-gray-900 font-medium truncate max-w-xs">{item.title}</span>
+    </nav>
+
+    <article class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+      <!-- Hero image -->
+      {item.image && (
+        <div class="aspect-video sm:aspect-[21/9] bg-gray-100">
+          <img
+            src={item.image}
+            alt={item.title}
+            class="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
+      <div class="p-6 sm:p-10">
+
+        <!-- Title -->
+        <h1 class="text-3xl font-extrabold text-gray-900 leading-tight mb-4">{item.title}</h1>
+
+        <!-- Description -->
+        {item.description && (
+          <p class="text-lg text-gray-600 mb-6 leading-relaxed">{item.description}</p>
+        )}
+
+        <!-- Tags -->
+        {item.tags.length > 0 && (
+          <div class="flex flex-wrap gap-2 mb-6">
+            {item.tags.map(tag => (
+              <span class="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-full">#{tag}</span>
+            ))}
+          </div>
+        )}
+
+        <!-- Extra fields -->
+        {extraEntries.length > 0 && (
+          <>
+            <hr class="border-gray-100 mb-6" />
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-8 text-sm">
+              {extraEntries.map(([key, val]) => (
+                <div>
+                  <dt class="font-medium text-gray-500 capitalize">{key.replace(/_/g, ' ')}</dt>
+                  <dd class="text-gray-900 mt-0.5">{val}</dd>
+                </div>
+              ))}
+            </dl>
+          </>
+        )}
+
+        <!-- Back button -->
+        <div class="flex pt-4 border-t border-gray-100">
+          <a
+            href={`${base}items`}
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            &larr; Back to Browse
+          </a>
+        </div>
+
+      </div>
+    </article>
+
+  </div>
+
+</Layout>
