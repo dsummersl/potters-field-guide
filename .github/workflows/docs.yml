@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------------------
+# Docs artifacts — Storybook (component inventory) + API reference (the spec)
+#
+# Runs on every push to `main` and every pull request, so a reviewer (or an
+# agent) can download the rendered component library and the API surface from
+# the run summary without checking out the code.
+#
+# This does NOT deploy anything — the app itself ships via SST. The separate
+# deploy.yml (GitHub Pages) is left untouched.
+# ---------------------------------------------------------------------------
+name: Docs artifacts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One build per ref; newer pushes cancel in-flight runs.
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Storybook + API reference
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      # `npm run build` = api:types (spec → types) + astro build (incl. the
+      # /api-docs Scalar page) + storybook build (→ dist/storybook).
+      - name: Build site + Storybook
+        run: npm run build
+
+      - name: Upload Storybook
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook
+          path: dist/storybook
+          if-no-files-found: error
+
+      # The Scalar page (dist/api-docs) plus the raw spec, so the API surface is
+      # viewable as a rendered page and readable as YAML.
+      - name: Upload API reference
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-reference
+          path: |
+            dist/api-docs
+            src/api/openapi.yaml
+          if-no-files-found: error
