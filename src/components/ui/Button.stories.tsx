@@ -2,9 +2,12 @@ import type { Meta, StoryObj } from '@storybook/preact';
 import { Button, type ButtonProps } from './Button';
 
 const meta: Meta<ButtonProps> = {
-  title: 'UI/Button',
+  // Top-level "Current/" groups the live, shipped components in Storybook's
+  // sidebar — the only track pages are allowed to import. Proposed redesigns
+  // live under "Next/" (src/components/next).
+  title: 'Current/UI/Button',
   component: Button,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'current'],
   args: {
     label: 'Click me',
     variant: 'primary',

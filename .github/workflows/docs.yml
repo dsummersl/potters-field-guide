@@ -1,12 +1,16 @@
 # ---------------------------------------------------------------------------
-# Docs artifacts — Storybook (component inventory) + API reference (the spec)
+# Docs artifacts + design-track guard
 #
-# Runs on every push to `main` and every pull request, so a reviewer (or an
-# agent) can download the rendered component library and the API surface from
-# the run summary without checking out the code.
+# On every push to `main` and every pull request:
+#   1. verify — the design-first contract holds (types match the OpenAPI spec,
+#      and no page imports the future-design `next/` track).
+#   2. docs   — build downloadable artifacts so a reviewer (or an agent) can see
+#      both design tracks and the API surface without checking out the code:
+#        • storybook     — Current/ (shipped) + Next/ (proposed) side by side
+#        • api-reference — a self-contained, fully OFFLINE Redoc page + the spec
 #
-# This does NOT deploy anything — the app itself ships via SST. The separate
-# deploy.yml (GitHub Pages) is left untouched.
+# This does NOT deploy anything — the app ships via SST, and the separate
+# Pages deploy.yml is left untouched.
 # ---------------------------------------------------------------------------
 name: Docs artifacts
 
@@ -19,30 +23,43 @@ on:
 permissions:
   contents: read
 
-# One build per ref; newer pushes cancel in-flight runs.
+# One run per ref; newer pushes cancel in-flight runs.
 concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build Storybook + API reference
+  verify:
+    name: Verify contract + design-track guard
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
+      - run: npm install
+      # Spec → types, then the compiler enforces handlers/usage against them.
+      - name: Types match the OpenAPI spec
+        run: npm run api:types && npx tsc --noEmit -p tsconfig.json
+      # Unit tests, incl. the guard that fails if a page imports components/next.
+      - name: Unit tests + next/ isolation guard
+        run: npm test
 
-      - name: Install dependencies
-        run: npm install
+  docs:
+    name: Build Storybook + offline API reference
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm install
 
-      # `npm run build` = api:types (spec → types) + astro build (incl. the
-      # /api-docs Scalar page) + storybook build (→ dist/storybook).
+      # `npm run build` = api:types + astro build + storybook build
+      # (dist/storybook contains both Current/ and Next/ tracks).
       - name: Build site + Storybook
         run: npm run build
 
@@ -53,13 +70,22 @@ jobs:
           path: dist/storybook
           if-no-files-found: error
 
-      # The Scalar page (dist/api-docs) plus the raw spec, so the API surface is
-      # viewable as a rendered page and readable as YAML.
+      # Self-contained Redoc: build-docs inlines the spec into the HTML, then we
+      # vendor redoc.standalone.js locally (from the pinned `redoc` package) and
+      # repoint the page at it — so the artifact renders with NO network/CDN.
+      - name: Build offline API reference (Redoc)
+        run: |
+          mkdir -p dist/api-reference
+          npx --yes @redocly/cli build-docs src/api/openapi.yaml \
+            -o dist/api-reference/index.html
+          cp node_modules/redoc/bundles/redoc.standalone.js \
+            dist/api-reference/redoc.standalone.js
+          node -e "const f='dist/api-reference/index.html',fs=require('fs');fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace(/https:\/\/cdn\.redocly\.com\/redoc\/[^\"']*redoc\.standalone\.js/g,'redoc.standalone.js'))"
+          cp src/api/openapi.yaml dist/api-reference/openapi.yaml
+
       - name: Upload API reference
         uses: actions/upload-artifact@v4
         with:
           name: api-reference
-          path: |
-            dist/api-docs
-            src/api/openapi.yaml
+          path: dist/api-reference
           if-no-files-found: error

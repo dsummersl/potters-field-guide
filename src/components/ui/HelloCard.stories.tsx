@@ -2,9 +2,11 @@ import type { Meta, StoryObj } from '@storybook/preact';
 import { HelloCard, type HelloCardProps } from './HelloCard';
 
 const meta: Meta<HelloCardProps> = {
-  title: 'UI/HelloCard',
+  // "Current/" = live, shipped components (the only track pages import).
+  // Proposed redesigns live under "Next/" (src/components/next).
+  title: 'Current/UI/HelloCard',
   component: HelloCard,
-  tags: ['autodocs'],
+  tags: ['autodocs', 'current'],
   argTypes: {
     state: {
       control: 'inline-radio',

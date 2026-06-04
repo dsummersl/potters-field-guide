@@ -22,6 +22,32 @@ Follow these rules without exception.
    like `HelloApiDemo.tsx`) may only compose states that already exist as
    stories. It must not introduce new visual states inline.
 
+## Two design tracks: `current` and `next`
+
+The component library has two tracks so future redesigns can be built without
+risking the live site:
+
+- **Current — `src/components/ui/`.** The shipped components. **Only this track
+  may be imported by pages and island containers.** Stories are grouped under
+  `Current/…` in Storybook.
+- **Next — `src/components/next/`.** Proposed redesigns. **No page or island
+  container may import from here** (enforced by
+  `src/components/next/no-page-imports.test.ts`). Stories are grouped under
+  `Next/…`, so a redesign sits next to its live counterpart in one Storybook.
+
+Rules for the `next/` track:
+
+1. Keep the **same public prop API** as the current component (re-use the
+   exported `…Props` type from `components/ui`) so promotion is a drop-in swap.
+2. Cover the **full state contract** (`default`/`loading`/`error`/`empty` for
+   data-backed components) before a redesign can be promoted.
+3. **Promotion is a deliberate human step** — copy `next/X.tsx` over
+   `ui/X.tsx`. Never wire `next/` into a page to "preview" it. See
+   `src/components/next/README.md`.
+
+When asked to work on a redesign, edit files under `src/components/next/` and
+leave `src/components/ui/` and all pages untouched.
+
 ## API (OpenAPI is the contract)
 
 1. **Spec first.** Edit `src/api/openapi.yaml` *before* touching a handler.

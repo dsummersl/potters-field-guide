@@ -35,6 +35,7 @@
     "concurrently": "^9.1.0",
     "openapi-typescript": "^7.4.0",
     "postcss": "^8.4.47",
+    "redoc": "^2.5.3",
     "sst": "^3.3.0",
     "storybook": "^8.4.0",
     "tsx": "^4.21.0",
