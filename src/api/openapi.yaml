@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: Hello API
+  version: 0.1.0
+  description: >
+    The API contract for this project. **Edit this file before writing any
+    handler code.** Types in `src/api/schema.gen.ts` are generated from this
+    spec (`npm run api:types`) and the Lambda handler is compiled against them,
+    so the contract and the implementation cannot drift.
+servers:
+  - url: http://localhost:3001
+    description: Local dev shim (`npm run api:local`)
+  - url: https://example.execute-api.us-east-1.amazonaws.com
+    description: Deployed API Gateway (URL printed by `sst dev` / `sst deploy`)
+paths:
+  /hello:
+    get:
+      operationId: getHello
+      summary: Return a friendly greeting
+      description: A minimal endpoint demonstrating the spec-first workflow.
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Who to greet. Defaults to "world".
+          schema:
+            type: string
+            maxLength: 64
+      responses:
+        '200':
+          description: A greeting and the time it was generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Greeting'
+        '400':
+          description: The request was malformed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Greeting:
+      type: object
+      required: [message, timestamp]
+      properties:
+        message:
+          type: string
+          example: Hello, world!
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp of when the greeting was produced.
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: name must be 64 characters or fewer

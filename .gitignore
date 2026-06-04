@@ -2,3 +2,7 @@
 node_modules/
 .astro/
 dist
+# SST generated platform types & state
+.sst/
+storybook-static/
+*storybook.log

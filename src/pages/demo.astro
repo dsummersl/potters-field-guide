@@ -1,0 +1,17 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { HelloApiDemo } from '@/components/ui/HelloApiDemo';
+---
+
+<Layout title="API Demo" description="A page assembled from documented components and the typed API contract.">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Hello API demo</h1>
+    <p class="text-gray-600 mb-8 max-w-2xl">
+      This page only composes components that already exist in
+      <a class="text-brand-700 underline" href="storybook">Storybook</a> and calls the
+      endpoint described in <a class="text-brand-700 underline" href="api-docs">the API docs</a>.
+      Run <code class="bg-gray-100 px-1 rounded">npm run dev</code> so the local API shim is live.
+    </p>
+    <HelloApiDemo client:load />
+  </section>
+</Layout>

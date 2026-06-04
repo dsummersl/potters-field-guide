@@ -1,0 +1,20 @@
+---
+// Living API documentation. Scalar renders the OpenAPI contract directly from
+// src/api/openapi.yaml (the single source of truth) — no copy step, so the docs
+// can never drift from the spec the handler is compiled against.
+import spec from '@/api/openapi.yaml?raw';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Docs</title>
+  </head>
+  <body>
+    <!-- Scalar reads the spec from this script tag's text content. -->
+    <script id="api-reference" type="application/yaml" set:html={spec}></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>

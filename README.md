@@ -1,191 +1,170 @@
-# Astro Directory Template
+# Astro API-First + Storybook Template
 
-A static-site directory template powered by Astro. Data comes from any source you can fetch in a TypeScript script — no Google Sheets account, no database, no CMS required.
+A **design-first** boilerplate for Astro projects deployed with [SST](https://sst.dev).
+The component library and the API contract are defined and served as living
+documentation *before* anything is assembled — which is exactly what keeps
+agent-assisted development from drifting, duplicating components, or
+hallucinating prop APIs.
 
-## How It Works
+Two surfaces are the source of truth:
+
+| Surface | Source of truth | Living docs (dev) |
+|---|---|---|
+| **Components** | `*.stories.tsx` collocated with each component | Storybook at `:6006` |
+| **API** | `src/api/openapi.yaml` | Scalar at `/api-docs` |
+
+A new contributor — or an agent — can see the **entire component inventory and
+API surface without reading source code**.
+
+## The design-first loop
 
 ```
-scripts/fetch-data.ts        src/config/schema.yaml
-       │                              │
-       ▼                              ▼
- src/data/items.yaml  ──►  src/lib/loader.ts  ──►  SiteItem[]  ──►  components
-  (raw YAML, any shape)    (maps + validates)       (4 roles)
+            ┌─ design ─────────────┐        ┌─ design ──────────────┐
+            │  Component.stories.tsx│        │  src/api/openapi.yaml │
+            │  (states: default,    │        │  (the request/response│
+            │   loading, error,     │        │   contract)           │
+            │   empty)              │        │                       │
+            └──────────┬───────────┘        └───────────┬───────────┘
+                       ▼                                ▼
+            Component.tsx (implements          npm run api:types
+              the documented props)            → src/api/schema.gen.ts
+                       │                                │
+                       ▼                                ▼
+            Pages assemble existing      src/api/hello.ts implements
+              component states            against the generated types
 ```
 
-There are four moving parts:
-
-1. **`scripts/fetch-data.ts`** — your data pipeline. This script fetches data from any API or remote source and writes it to `src/data/items.yaml` as a flat array of YAML objects. The template ships with a working Pokémon example that you replace with your own fetch logic.
-
-2. **`src/config/schema.yaml`** — the only file you edit when adapting the template to a new data source. It declares which field in `items.yaml` maps to each of the five canonical roles (`id`, `title`, `image`, `description`, `tags`) and what type each field must be. Everything else is automatic.
-
-3. **`src/lib/loader.ts`** — reads both YAML files at build time, renames source fields to canonical names, validates types, skips bad rows with descriptive warnings, and returns a typed `SiteItem[]` array. No field-name knowledge leaks past this point.
-
-4. **Components and pages** — only ever see `SiteItem`. They have no knowledge of your source field names and require no changes when you switch data sources.
+The arrows only ever point **down**: design → implement → assemble. You never
+implement a component without a story, and never write a handler without the
+spec. See [`CLAUDE.md`](./CLAUDE.md) / [`.cursorrules`](./.cursorrules) for the
+agent-enforced version of these rules.
 
 ## Quickstart
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/your-org/astro-directory-template
-cd astro-directory-template
 npm install
-
-# 2. Generate data (runs the Pokémon example out of the box)
-npm run fetch
-
-# 3. Start the dev server
-npm run dev
+npm run api:types     # generate API types from the spec (also part of build)
+npm run dev           # starts everything below, concurrently
 ```
 
-The site is available at `http://localhost:4321`. It displays 20 Pokémon pulled from the public PokéAPI. No configuration needed for the first run.
+`npm run dev` runs three processes:
 
-## Pages
-
-| Route | Description |
-|---|---|
-| `/` | Home — hero with search bar and item count, full grid of all items |
-| `/search` | Client-side full-text search across title, description, and tags |
-| `/items` | Browse — full grid of all items |
-| `/items/[id]` | Detail — title, description, tags, and any extra fields as key/value pairs |
-
-## Adapting to Your Own Data
-
-### Step 1: Edit the fetch script
-
-`scripts/fetch-data.ts` is your data pipeline. Its only contract is to write a YAML array of flat objects to `src/data/items.yaml`. The field names can be anything — you'll map them in the schema.
-
-```typescript
-// Example: pull from your own API and write flat records
-const response = await fetch('https://api.example.com/products');
-const products = await response.json();
-
-const items = products.map((p: any) => ({
-  id:           String(p.product_id),
-  product_name: p.name,
-  photo_url:    p.images[0]?.url ?? '',
-  summary:      p.short_description,
-  category:     p.tags.join(','),
-}));
-
-writeFileSync('src/data/items.yaml', yaml.dump(items));
-```
-
-Any secrets your script needs (API keys, tokens) should be read from `process.env`. Store them as GitHub Actions secrets and they'll be available automatically during CI builds.
-
-### Step 2: Edit the schema
-
-`src/config/schema.yaml` maps your source field names to the five canonical roles. This is the only file that knows your source field names:
-
-```yaml
-fields:
-  id:
-    source: id            # field name as written in items.yaml
-    type: string
-    required: true
-  title:
-    source: product_name  # ← your source field
-    type: string
-    required: true
-  image:
-    source: photo_url
-    type: url
-    required: false
-  description:
-    source: summary
-    type: string
-    required: false
-  tags:
-    source: category      # comma-separated → split into string[]
-    type: string
-    required: false
-```
-
-That's it. No other files need to change.
-
-## Schema Reference
-
-### Supported types
-
-| Type | Validation rule |
-|---|---|
-| `string` | Always passes |
-| `url` | Must parse successfully with `new URL()` |
-| `integer` | Must match `/^-?\d+$/` (no decimal point) |
-| `number` | Must parse as a finite number |
-
-### Validation behavior
-
-- A row missing a `required: true` field is **skipped** entirely and a warning is printed: `[loader] Skipping row "42": field "product_name" is required`
-- A row with a value that fails its type check is **skipped** entirely with a similar warning: `[loader] Skipping row "42": field "photo_url" failed type check "url"`
-- Fields present in `items.yaml` but not declared in the schema are collected into `item.extras` and rendered as key/value pairs on the detail page — no data is silently dropped
-
-## GitHub Actions / CI
-
-The deploy workflow runs `npm run fetch` automatically before every build:
-
-```yaml
-- name: Fetch data
-  run: npm run fetch
-
-- name: Build site
-  run: npm run build
-```
-
-This means your site always reflects fresh data on every deployment. To pass secrets to your fetch script, add them in **GitHub Settings → Secrets and variables → Actions** — the script reads them via `process.env`. The workflow file itself never needs editing.
-
-`src/data/items.yaml` is committed with pre-generated Pokémon data so the site builds immediately on first clone without any configuration.
-
-### First-time GitHub Pages setup
-
-1. Go to **Settings → Pages** and set *Source* to **GitHub Actions**.
-2. Add the following in **Settings → Secrets and variables → Actions**:
-   - **Variable** `SITE_URL` — e.g. `https://yourusername.github.io`
-   - **Variable** `SITE_BASE` — e.g. `/your-repo-name` (leave empty for custom domains)
-3. Push to `main` or click **Actions → Run workflow**.
-
-## Running Tests
-
-```bash
-npm test
-```
-
-Tests cover the loader's field-mapping and type-validation logic (`src/lib/loader.test.ts`). All 7 tests run in under a second.
-
-## Pokémon Example Walkthrough
-
-The default `scripts/fetch-data.ts` fetches 20 Pokémon from [PokéAPI](https://pokeapi.co) and flattens the nested response into a simple YAML structure.
-
-| PokéAPI response field | Flat key in `items.yaml` | Mapped to in schema |
+| URL | What | Backed by |
 |---|---|---|
-| `pokemon.id` | `id` | `id` |
-| `pokemon.name` | `name` | `title` |
-| `pokemon.sprites.front_default` | `sprites_front_default` | `image` |
-| `pokemon.species.url` | `species_url` | `description` |
-| `pokemon.types[*].type.name` (joined) | `types` | `tags` |
+| http://localhost:4321 | Astro site (incl. `/demo`) | `astro dev` |
+| http://localhost:4321/api-docs | API reference (Scalar) | reads `openapi.yaml` |
+| http://localhost:6006 | Storybook component library | `storybook dev` |
+| http://localhost:3001/hello | Live Hello API | `scripts/api-local.ts` |
 
-To inspect the raw output yourself:
+The header nav on the site links to **API Demo**, **API Docs**, and
+**Storybook**, so the full inventory is reachable from the home page.
+
+> The `/demo` page is a worked example of "assembly": it composes the
+> already-designed `HelloCard` states and `Button`, and calls the typed
+> `/hello` endpoint. It invents nothing new.
+
+## Running with SST
+
+`npm run dev` works with **zero AWS setup** — the API runs as a local Node shim
+so the docs have a live server to hit. To run the real Lambda live against AWS:
 
 ```bash
-npm run fetch
-head -30 src/data/items.yaml
+npm run dev:sst      # = sst dev   (requires AWS credentials)
 ```
 
-## Customisation
+`sst.config.ts` defines:
 
-**Branding** — edit `src/components/Header.astro` and `src/components/Footer.astro`.
+- an **`ApiGatewayV2`** construct with a `GET /hello` route → `src/api/hello.handler`
+- an **`Astro`** site, with the API linked in as `PUBLIC_API_URL` so the
+  frontend calls the deployed endpoint with no hard-coded URLs.
 
-**Colour scheme** — `tailwind.config.mjs` defines the `brand` colour palette. Change the hex values to match your project.
+Deploy with `npx sst deploy --stage production`.
 
-**Base path** — for GitHub Pages project sites (`username.github.io/repo-name`), set `SITE_URL` and `SITE_BASE` as described above.
+## Components
 
-## Tech Stack
+Components live in `src/components/ui/` as Preact (`.tsx`) components, each with
+a collocated story:
 
-- [Astro 4](https://astro.build) — static site generator
-- [Tailwind CSS 3](https://tailwindcss.com) — utility-first styling
-- [js-yaml](https://github.com/nodeca/js-yaml) — YAML parsing for the loader and fetch script
-- [tsx](https://github.com/privatenumber/tsx) — run TypeScript scripts directly
-- [Vitest](https://vitest.dev) — unit tests for the loader
-- GitHub Actions + GitHub Pages — CI/CD and hosting
+```
+src/components/ui/
+  Button.tsx          Button.stories.tsx
+  HelloCard.tsx       HelloCard.stories.tsx     ← default / loading / error / empty
+  HelloApiDemo.tsx    (container: assembles the above + the typed API)
+```
+
+**Adding a component (the required order):**
+
+1. Write `MyThing.stories.tsx` describing the prop API and every state.
+2. Implement `MyThing.tsx` to satisfy those stories.
+3. Assemble it into a page or container — using only states that have stories.
+
+Tailwind is wired through `postcss.config.cjs`, so stories render with the exact
+same utility classes as production pages — no separate styling pipeline to drift.
+
+## API
+
+`src/api/openapi.yaml` is the contract and is authored first. Types flow from it:
+
+```bash
+npm run api:types     # openapi.yaml → src/api/schema.gen.ts (do not edit by hand)
+```
+
+`src/api/hello.ts` imports the generated `paths` types, so the handler
+**cannot** return a shape the spec doesn't describe — the contract and the
+implementation are kept in lockstep by the type checker.
+
+**Adding/changing an endpoint (the required order):**
+
+1. Edit `src/api/openapi.yaml`.
+2. `npm run api:types`.
+3. Implement the handler in `src/api/` against the regenerated types.
+4. Wire the route in `sst.config.ts`.
+
+> Want runtime validation too? Swap the spec-first flow for a schema-first one
+> with [`zod-to-openapi`](https://github.com/asteasolutions/zod-to-openapi) or
+> TypeBox: define a Zod/TypeBox schema, generate `openapi.yaml` from it, and
+> reuse the schema to validate at runtime. The type-sharing seam
+> (`schema.gen.ts`) stays the same.
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Astro + Storybook + local API, concurrently |
+| `npm run dev:sst` | `sst dev` — live Lambda against AWS |
+| `npm run build` | `api:types` → Astro build → Storybook build (into `dist/storybook`) |
+| `npm run api:types` | Regenerate API types from `openapi.yaml` |
+| `npm run api:local` | Run the Hello handler over plain HTTP (no AWS) |
+| `npm run storybook` | Storybook only, on `:6006` |
+| `npm test` | Unit tests (Vitest) |
+| `npm run fetch` | Data pipeline for the directory pages (see below) |
+
+## Tech stack
+
+- [Astro 4](https://astro.build) — pages, static output
+- [Preact](https://preactjs.com) + [Storybook 8](https://storybook.js.org) — component library & docs
+- [SST v3](https://sst.dev) — API Gateway + Lambda + site deploy
+- [OpenAPI 3.1](https://www.openapis.org) + [openapi-typescript](https://github.com/openapi-ts/openapi-typescript) — API contract → types
+- [Scalar](https://scalar.com) — API reference UI
+- [Tailwind CSS 3](https://tailwindcss.com) — styling (shared Astro/Storybook pipeline)
+
+---
+
+## Directory data pipeline (inherited)
+
+This template also ships the original Astro Directory loader: a build-time
+pipeline that turns any data source into a typed `SiteItem[]` for the `/`,
+`/items`, and `/items/[id]` pages.
+
+- **`scripts/fetch-data.ts`** — fetches data and writes `src/data/items.yaml`
+  (the default example pulls 20 Pokémon from [PokéAPI](https://pokeapi.co)).
+- **`src/config/schema.yaml`** — maps your source fields to the canonical roles
+  (`id`, `title`, `image`, `description`, `tags`).
+- **`src/lib/loader.ts`** — reads, renames, validates, and returns `SiteItem[]`.
+
+Run `npm run fetch` to regenerate the data. Field-mapping and validation rules
+are covered by `src/lib/loader.test.ts` (`npm test`). Adapt it by editing the
+fetch script and the schema — no other files need to change.
 
 ## License
 
