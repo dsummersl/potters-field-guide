@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/preact';
+import type { Meta, StoryObj } from '@storybook/preact-vite';
 import { HelloCard } from './HelloCard';
 import type { HelloCardProps } from '@/components/ui/HelloCard';
 

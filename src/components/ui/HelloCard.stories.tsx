@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/preact';
+import type { Meta, StoryObj } from '@storybook/preact-vite';
 import { HelloCard, type HelloCardProps } from './HelloCard';
 
 const meta: Meta<HelloCardProps> = {

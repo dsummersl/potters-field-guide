@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/preact';
+import type { Preview } from '@storybook/preact-vite';
 // Same Tailwind pipeline as the Astro pages (see postcss.config.cjs), so stories
 // look exactly like production.
 import '../src/styles/tailwind.css';
