@@ -46,16 +46,22 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
         run: npm install
 
-      - name: Fetch data
-        run: npm run fetch
+      # NOTE: data is committed at src/data/items.yaml, so the build needs no
+      # network. Refresh it locally with `npm run fetch` and commit the result;
+      # we deliberately do NOT fetch in CI (the runner has no outbound access to
+      # the source API, and a static deploy should be reproducible from the repo).
 
-      - name: Build site
+      # `npm run build` produces the entire static deploy in dist/:
+      #   • the directory site (static, no API runtime)
+      #   • /storybook  — the component library
+      #   • /api-docs   — the Redoc API reference (renders offline)
+      - name: Build static site + Storybook + API reference
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           SITE_BASE: ${{ vars.SITE_BASE }}

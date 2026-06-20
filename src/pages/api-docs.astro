@@ -1,0 +1,28 @@
+---
+// Living API documentation. Redoc renders the OpenAPI contract directly from
+// src/api/openapi.yaml (the single source of truth) — no copy step, so the docs
+// can never drift from the spec the handler is compiled against.
+//
+// Both the renderer and the spec are imported as local assets (?url): Vite
+// fingerprints them into the build, so this page has NO external/CDN
+// dependency and renders fully offline once served.
+import redocUrl from 'redoc/bundles/redoc.standalone.js?url';
+import specUrl from '@/api/openapi.yaml?url';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Reference</title>
+  </head>
+  <body>
+    <div id="redoc"></div>
+    <script src={redocUrl} is:inline></script>
+    <script is:inline define:vars={{ specUrl }}>
+      // Redoc fetches and parses the YAML spec from the same-origin asset URL.
+      Redoc.init(specUrl, {}, document.getElementById('redoc'));
+    </script>
+  </body>
+</html>

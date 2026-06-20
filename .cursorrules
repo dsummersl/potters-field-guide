@@ -1,0 +1,26 @@
+# Cursor / AI agent rules — design-first Astro + SST project
+#
+# Full version lives in CLAUDE.md. Summary of the non-negotiable workflow:
+
+## Components
+- Storybook is the component inventory. Before building a component, check
+  `src/components/ui/` and Storybook (http://localhost:6006). Reuse before you
+  create — never make a duplicate component.
+- Write `Component.stories.tsx` BEFORE `Component.tsx`. Stories define the prop
+  API and every visual state (default, loading, error, empty).
+- Keep `Component.stories.tsx` next to `Component.tsx`.
+- Pages and island containers only ASSEMBLE existing stories; they must not
+  invent new visual states inline.
+
+## API
+- `src/api/openapi.yaml` is the API contract. Edit the spec BEFORE the handler.
+- After editing the spec, run `npm run api:types` to regenerate
+  `src/api/schema.gen.ts`. Never edit that file by hand.
+- Handlers import the generated `paths` types and cannot return a shape the
+  spec doesn't describe. Need a new shape? Change the spec first.
+- Wire the route in `sst.config.ts` alongside the handler.
+
+## Verify before done
+- `npm run api:types && npx tsc --noEmit -p tsconfig.json`
+- `npm run build`
+- `npm test`
